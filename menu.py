@@ -287,3 +287,97 @@ class ChessBoard:
             # Row labels
             text = small_font.render(str(8 - i), True, TEXT_COLOR)
             screen.blit(text, (BOARD_X - 25, BOARD_Y + i * SQUARE_SIZE + SQUARE_SIZE // 2 - 8))
+
+
+class MenuManager:
+    """Manages the game menu and game state"""
+    
+    def __init__(self, screen):
+        """Initialize the menu manager"""
+        self.screen = screen
+        self.game_board = ChessBoard()
+        self.game_state = 'playing'  # playing, paused, game_over
+        self.font_large = pygame.font.Font(None, 72)
+        self.font_medium = pygame.font.Font(None, 48)
+        self.font_small = pygame.font.Font(None, 36)
+    
+    def handle_events(self, events):
+        """Handle user input events"""
+        for event in events:
+            if event.type == pygame.QUIT:
+                return False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if self.game_state == 'playing':
+                    self.handle_click(event.pos)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return False
+                elif event.key == pygame.K_r:
+                    self.reset_game()
+        
+        return True
+    
+    def handle_click(self, pos):
+        """Handle mouse click on the board"""
+        mouse_x, mouse_y = pos
+        
+        # Check if click is within board bounds
+        if (BOARD_X <= mouse_x <= BOARD_X + BOARD_SIZE and
+            BOARD_Y <= mouse_y <= BOARD_Y + BOARD_SIZE):
+            
+            col = (mouse_x - BOARD_X) // SQUARE_SIZE
+            row = (mouse_y - BOARD_Y) // SQUARE_SIZE
+            
+            if self.game_board.selected_piece:
+                # Try to move the piece
+                if (row, col) in self.game_board.valid_moves:
+                    self.game_board.move_piece(row, col)
+                    
+                    # Switch turns
+                    self.game_board.current_turn = 'black' if self.game_board.current_turn == 'white' else 'white'
+                else:
+                    # Select a different piece
+                    self.game_board.select_piece(row, col)
+            else:
+                # Select a piece
+                self.game_board.select_piece(row, col)
+    
+    def reset_game(self):
+        """Reset the game"""
+        self.game_board = ChessBoard()
+        self.game_state = 'playing'
+    
+    def update(self):
+        """Update game state"""
+        if self.game_board.is_checkmate('black'):
+            self.game_state = 'game_over'
+            self.game_board.winner = 'white'
+        elif self.game_board.is_checkmate('white'):
+            self.game_state = 'game_over'
+            self.game_board.winner = 'black'
+    
+    def draw(self):
+        """Draw the current screen"""
+        self.screen.fill(BG_COLOR)
+        
+        # Draw the board
+        self.game_board.draw(self.screen)
+        
+        # Draw current turn
+        turn_text = self.font_small.render(f"Turn: {self.game_board.current_turn.upper()}", True, TEXT_COLOR)
+        self.screen.blit(turn_text, (BOARD_X + BOARD_SIZE + 30, BOARD_Y + 20))
+        
+        # Draw game over screen
+        if self.game_state == 'game_over':
+            overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+            overlay.set_alpha(200)
+            overlay.fill((0, 0, 0))
+            self.screen.blit(overlay, (0, 0))
+            
+            winner_text = self.font_large.render(f"{self.game_board.winner.upper()} WINS!", True, (255, 255, 0))
+            self.screen.blit(winner_text, (WINDOW_WIDTH // 2 - 200, WINDOW_HEIGHT // 2 - 100))
+            
+            reset_text = self.font_small.render("Press R to play again or ESC to exit", True, TEXT_COLOR)
+            self.screen.blit(reset_text, (WINDOW_WIDTH // 2 - 250, WINDOW_HEIGHT // 2 + 50))
+        
+        pygame.display.flip()
