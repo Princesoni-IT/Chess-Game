@@ -1,6 +1,12 @@
 import { useEffect } from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
+import { useAuth } from './AuthContext';
+import SignIn from './pages/SignIn';
+import SignUp from './pages/SignUp';
 
 export function App() {
+  const { user, isAuthenticated, logout } = useAuth();
+
   useEffect(() => {
     // Chess Board Initialization
     const initialPosition = [
@@ -15,17 +21,17 @@ export function App() {
     ];
 
     const blackPieces = ['♜', '♞', '♝', '♛', '♚', '♟'];
-    
+
     const board = document.getElementById('chessBoard');
     if (board) {
       board.innerHTML = '';
-      
+
       for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
           const square = document.createElement('div');
           const isLight = (row + col) % 2 === 0;
           square.className = `square ${isLight ? 'light' : 'dark'}`;
-          
+
           const piece = initialPosition[row][col];
           if (piece) {
             const pieceSpan = document.createElement('span');
@@ -34,12 +40,12 @@ export function App() {
             pieceSpan.style.animationDelay = `${(row + col) * 0.1}s`;
             square.appendChild(pieceSpan);
           }
-          
-          square.addEventListener('click', function() {
+
+          square.addEventListener('click', function () {
             document.querySelectorAll('.square').forEach(sq => sq.classList.remove('selected'));
             square.classList.add('selected');
           });
-          
+
           board.appendChild(square);
         }
       }
@@ -75,7 +81,7 @@ export function App() {
         const target = counter.textContent || '';
         const numericValue = parseInt(target.replace(/[^0-9]/g, ''));
         const suffix = target.replace(/[0-9]/g, '');
-        
+
         if (numericValue) {
           let current = 0;
           const increment = numericValue / 50;
@@ -115,7 +121,7 @@ export function App() {
 
     // Smooth scroll
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function(e) {
+      anchor.addEventListener('click', function (e) {
         e.preventDefault();
         const href = anchor.getAttribute('href');
         if (href) {
@@ -133,6 +139,18 @@ export function App() {
     };
   }, []);
 
+  return (
+    <>
+      <Routes>
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/" element={<LandingPage isAuthenticated={isAuthenticated} user={user} logout={logout} />} />
+      </Routes>
+    </>
+  );
+}
+
+function LandingPage({ isAuthenticated, user, logout }: { isAuthenticated: boolean; user: any; logout: () => void }) {
   return (
     <>
       <style>{`
@@ -339,6 +357,51 @@ export function App() {
           .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; }
           .square { font-size: 1.5rem; }
         }
+
+        .user-header-group {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .user-avatar-small {
+          width: 36px;
+          height: 36px;
+          background: linear-gradient(135deg, #f59e0b, #d97706);
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: #fff;
+        }
+
+        .user-name {
+          color: #cbd5e1;
+          font-weight: 500;
+          font-size: 0.9rem;
+        }
+
+        .btn-logout {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.5rem 1rem;
+          border-radius: 10px;
+          font-weight: 600;
+          font-size: 0.85rem;
+          cursor: pointer;
+          border: 1.5px solid #334155;
+          background: transparent;
+          color: #94a3b8;
+          font-family: 'Poppins', sans-serif;
+          transition: all 0.3s ease;
+        }
+        .btn-logout:hover {
+          border-color: #ef4444;
+          color: #fca5a5;
+          background: rgba(239, 68, 68, 0.1);
+        }
       `}</style>
 
       {/* Animated Background */}
@@ -361,16 +424,24 @@ export function App() {
               <div className="logo-icon">♔</div>
               <span className="logo-text">Chess Master</span>
             </a>
-            
+
             <nav>
               <a href="#features">Features</a>
               <a href="#play">Play</a>
               <a href="#learn">Learn</a>
               <a href="#community">Community</a>
             </nav>
-            
-            <a href="#" className="btn btn-primary">Sign In</a>
-            
+
+            {isAuthenticated && user ? (
+              <div className="user-header-group">
+                <div className="user-avatar-small">{user.username.substring(0, 2).toUpperCase()}</div>
+                <span className="user-name">{user.username}</span>
+                <button className="btn-logout" onClick={logout}>Logout</button>
+              </div>
+            ) : (
+              <Link to="/signin" className="btn btn-primary">Sign In</Link>
+            )}
+
             <button className="mobile-menu-btn">☰</button>
           </div>
         </div>
@@ -387,7 +458,7 @@ export function App() {
                 <span>Kings & Queens</span>
               </h1>
               <p className="hero-description">
-                Join millions of players worldwide. Improve your skills with interactive lessons, 
+                Join millions of players worldwide. Improve your skills with interactive lessons,
                 challenging puzzles, and compete in live tournaments against players of all levels.
               </p>
               <div className="hero-buttons">
@@ -409,7 +480,7 @@ export function App() {
                 </div>
               </div>
             </div>
-            
+
             <div className="hero-visual">
               <div className="board-wrapper">
                 <div className="board-glow"></div>
@@ -434,7 +505,7 @@ export function App() {
               Everything you need to become a chess grandmaster, all in one platform.
             </p>
           </div>
-          
+
           <div className="features-grid">
             <div className="feature-card fade-in">
               <div className="feature-icon">📚</div>
@@ -443,7 +514,7 @@ export function App() {
                 Learn from beginner to advanced with our comprehensive, structured curriculum designed by grandmasters.
               </p>
             </div>
-            
+
             <div className="feature-card fade-in">
               <div className="feature-icon">🧩</div>
               <h3 className="feature-title">Daily Puzzles</h3>
@@ -451,7 +522,7 @@ export function App() {
                 Sharpen your tactical skills with thousands of puzzles tailored to your skill level.
               </p>
             </div>
-            
+
             <div className="feature-card fade-in">
               <div className="feature-icon">🏆</div>
               <h3 className="feature-title">Live Tournaments</h3>
@@ -459,7 +530,7 @@ export function App() {
                 Compete against players worldwide in daily tournaments with real prizes and rankings.
               </p>
             </div>
-            
+
             <div className="feature-card fade-in">
               <div className="feature-icon">📊</div>
               <h3 className="feature-title">Game Analysis</h3>
@@ -467,7 +538,7 @@ export function App() {
                 AI-powered analysis reviews your games and identifies areas for improvement.
               </p>
             </div>
-            
+
             <div className="feature-card fade-in">
               <div className="feature-icon">👥</div>
               <h3 className="feature-title">Play Friends</h3>
@@ -475,7 +546,7 @@ export function App() {
                 Challenge your friends or make new ones in our vibrant global chess community.
               </p>
             </div>
-            
+
             <div className="feature-card fade-in">
               <div className="feature-icon">📱</div>
               <h3 className="feature-title">Play Anywhere</h3>
@@ -521,7 +592,7 @@ export function App() {
               See what our community has to say about their experience.
             </p>
           </div>
-          
+
           <div className="testimonials-grid">
             <div className="testimonial-card fade-in">
               <div className="testimonial-rating">★★★★★</div>
@@ -536,7 +607,7 @@ export function App() {
                 </div>
               </div>
             </div>
-            
+
             <div className="testimonial-card fade-in">
               <div className="testimonial-rating">★★★★★</div>
               <p className="testimonial-text">
@@ -550,7 +621,7 @@ export function App() {
                 </div>
               </div>
             </div>
-            
+
             <div className="testimonial-card fade-in">
               <div className="testimonial-rating">★★★★★</div>
               <p className="testimonial-text">
@@ -601,7 +672,7 @@ export function App() {
                 <a href="#" className="social-link">▶️</a>
               </div>
             </div>
-            
+
             <div className="footer-links">
               <h4>Product</h4>
               <ul>
@@ -611,7 +682,7 @@ export function App() {
                 <li><a href="#">Tournaments</a></li>
               </ul>
             </div>
-            
+
             <div className="footer-links">
               <h4>Company</h4>
               <ul>
@@ -621,7 +692,7 @@ export function App() {
                 <li><a href="#">Contact</a></li>
               </ul>
             </div>
-            
+
             <div className="footer-links">
               <h4>Support</h4>
               <ul>
@@ -632,7 +703,7 @@ export function App() {
               </ul>
             </div>
           </div>
-          
+
           <div className="footer-bottom">
             <p>&copy; 2024 Chess Master. All rights reserved.</p>
             <p>Made with ♔ for chess lovers worldwide</p>
