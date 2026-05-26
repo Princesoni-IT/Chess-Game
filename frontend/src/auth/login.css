@@ -113,20 +113,14 @@
 
   border-radius: inherit;
 
-  background: linear-gradient(
-    135deg,
-    rgba(245,158,11,0.45),
-    rgba(245,158,11,0),
-    rgba(59,130,246,0.25)
-  );
+background: linear-gradient(
+  135deg,
+  rgba(245,158,11,0.45),
+  rgba(245,158,11,0),
+  rgba(59,130,246,0.25)
+);
 
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-
-  -webkit-mask-composite: xor;
-
-  pointer-events: none;
+pointer-events: none;
 }
 
 /* header */
