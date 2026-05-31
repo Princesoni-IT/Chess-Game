@@ -1,19 +1,17 @@
 import { useState, useEffect } from 'react'
-import Header from './components/Header'
-import Hero from './components/Hero'
-import Features from './components/Features'
-import StatsSection from './components/StatsSection'
-import Testimonials from './components/Testimonials'
-import CTA from './components/CTA'
-import Footer from './components/Footer'
-import AnimatedBackground from './components/AnimatedBackground'
-import GameModal from './components/GameModal'
-import Game from './components/Game'
+import LandingPage from './landingpage/landingpage'
+import Game from './protected/Game'
+import GameModal from './protected/GameModal'
+import Login from './auth/login'
+import Signup from './auth/signup'
+
 import './App.css'
 
 export default function App() {
   const [showModal, setShowModal] = useState(false)
   const [gameMode, setGameMode]   = useState(null)
+  const [authPage, setAuthPage] = useState(null) // 'login', 'signup', or null
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,18 +40,31 @@ export default function App() {
     return <Game mode={gameMode} onBack={handleBack} />
   }
 
+  // Agar login page show karna hai
+  if (authPage === 'login') {
+    return (
+      <Login 
+        setAuth={setIsAuthenticated}
+        onBack={() => setAuthPage(null)}
+        onSwitchToSignup={() => setAuthPage('signup')}
+      />
+    )
+  }
+
+  // Agar signup page show karna hai
+  if (authPage === 'signup') {
+    return (
+      <Signup 
+        setAuth={setIsAuthenticated}
+        onBack={() => setAuthPage(null)}
+        onSwitchToLogin={() => setAuthPage('login')}
+      />
+    )
+  }
+
   return (
     <>
-      <AnimatedBackground />
-      <Header onPlayNow={() => setShowModal(true)} />
-      <main>
-        <Hero onPlayNow={() => setShowModal(true)} />
-        <Features />
-        <StatsSection />
-        <Testimonials />
-        <CTA onPlayNow={() => setShowModal(true)} />
-      </main>
-      <Footer />
+      <LandingPage onPlayNow={() => setShowModal(true)} onSignInClick={() => setAuthPage('login')} />
 
       {showModal && (
         <GameModal
